@@ -14,7 +14,7 @@ if __name__ == '__main__':
                     'message': 'nekoflow',
                     'choices': [
                         'Add Account',
-                        'Help',
+                        'About',
                         'Exit'
                     ]
                 }
