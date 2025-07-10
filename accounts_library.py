@@ -57,6 +57,4 @@ class AccountManager:
         """ From page get nicknames of the collection """
         self.cur.execute("SELECT nickname FROM accounts LIMIT 10 OFFSET ?", (page*10,))
         rows = self.cur.fetchall()
-        print(rows)
-        print([row[0] for row in rows])
         return [row[0] for row in rows]
