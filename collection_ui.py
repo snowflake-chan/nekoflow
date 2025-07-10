@@ -11,7 +11,8 @@ class CollectionUI:
         self.page_count = self.manager.get_collection_count()
 
     def get_current_page_options(self):
-        collection = self.manager.get_collection(self.current_page)
+        collection = [Choice(value=row[0], name=row[1])
+                      for row in self.manager.get_collection(self.current_page)]
         # 添加导航按钮
         options = []
         if self.current_page > 0:
@@ -51,4 +52,5 @@ class CollectionUI:
                 continue
             else:
                 # 返回最终选择（过滤导航按钮）
-                return [item for item in response if item not in ("__next_page__", "__prev_page__")]
+                result = [item for item in response if item not in ("__next_page__", "__prev_page__")]
+                self.manager.tick(result)
