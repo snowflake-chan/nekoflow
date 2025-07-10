@@ -13,6 +13,7 @@ if __name__ == '__main__':
                     'name': 'action',
                     'message': 'nekoflow',
                     'choices': [
+                        'Collection',
                         'Add Account',
                         'About',
                         'Exit'
@@ -22,7 +23,10 @@ if __name__ == '__main__':
 
             action = prompt(main_list)['action']
 
-            if action == 'Add Account':
+            if action == 'Collection':
+                pass
+
+            elif action == 'Add Account':
                 questions = [
                     {
                         'type': 'input',
