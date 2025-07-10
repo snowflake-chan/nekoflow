@@ -15,12 +15,13 @@ class AccountManager:
 
         table_sql = """
         CREATE TABLE IF NOT EXISTS accounts (
+            is_ticked INTEGER NOT NULL,
             id INTEGER PRIMARY KEY,
             identity TEXT,
             nickname TEXT,
             password TEXT,
             token TEXT,
-            has_phone_number INTEGER,
+            has_phone_number INTEGER NOT NULL,
             comments TEXT,
             last_updated TIMESTAMP DEFAULT CURRENT_TIMESTAMP
         );
@@ -42,7 +43,7 @@ class AccountManager:
     def add_account(self,identity,password):
         user = User(identity,password)
         has_phone_number = user.phone_number is not None
-        self.con.execute("INSERT INTO accounts(id,identity,nickname,password,token,has_phone_number,comments,last_updated)"
-                         "VALUES (?,?,?,?,?,?,'',CURRENT_TIMESTAMP);",
+        self.con.execute("INSERT INTO accounts(is_ticked,id,identity,nickname,password,token,has_phone_number,comments,last_updated)"
+                         "VALUES (0,?,?,?,?,?,?,'',CURRENT_TIMESTAMP);",
                          (user.id, identity, user.nickname, password, user.token, has_phone_number))
         self.con.commit()
