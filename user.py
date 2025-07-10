@@ -44,6 +44,9 @@ class LoginInfo:
     auth: AuthInfo
     user_info: UserInfo
 
+class LoginException(Exception):
+    pass
+
 class User:
     verified: bool = False
 
@@ -69,7 +72,7 @@ class User:
                 self.phone_number = info.auth.phone_number
                 self.token = info.auth.token
             else:
-                print("error")
+                raise LoginException("Failed to login")
 
     def load_info(self):
         pass
