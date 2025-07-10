@@ -60,7 +60,7 @@ class AccountManager:
 
         self.cur.execute("SELECT nickname FROM accounts LIMIT 20 OFFSET ?;", (page*10,))
         rows = self.cur.fetchall()
-        return [row[0] for row in rows],
+        return [row[0] for row in rows]
 
     def get_collection_count(self):
         self.cur.execute("SELECT COUNT(*) FROM accounts;")
