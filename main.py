@@ -19,7 +19,10 @@ if __name__ == '__main__':
             ).execute()
 
             if action == 'Collection':
-                pass
+                inquirer.checkbox(
+                    message='collection',
+                    choices=manager.get_collection()
+                ).execute()
 
             elif action == 'Add Account':
                 identity = inquirer.text(message='identity> ').execute()
