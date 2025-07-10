@@ -60,8 +60,11 @@ class AccountManager:
 
         self.cur.execute("SELECT COUNT(*) FROM accounts;")
         total_count = self.cur.fetchone()[0]
-        total_pages = math.ceil(total_count / 20)
+        page_count = math.ceil(total_count / 20)
 
         self.cur.execute("SELECT nickname FROM accounts LIMIT 20 OFFSET ?;", (page*10,))
         rows = self.cur.fetchall()
-        return [row[0] for row in rows]
+        return {
+            "choices":[row[0] for row in rows],
+            "page_count":page_count
+        }

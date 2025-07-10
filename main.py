@@ -19,9 +19,10 @@ if __name__ == '__main__':
             ).execute()
 
             if action == 'Collection':
+                collection = manager.get_collection()
                 inquirer.checkbox(
-                    message='collection',
-                    choices=manager.get_collection()
+                    message=f'collection> 1 / {collection["page_count"]}',
+                    choices=collection["choices"]
                 ).execute()
 
             elif action == 'Add Account':
