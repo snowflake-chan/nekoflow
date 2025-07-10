@@ -1,5 +1,6 @@
 import sqlite3
 from user import User
+import math
 
 class AccountManager:
     def __init__(self, lib=".db"):
@@ -56,6 +57,11 @@ class AccountManager:
 
     def get_collection(self,page=0):
         """ From page get nicknames of the collection """
-        self.cur.execute("SELECT nickname FROM accounts LIMIT 10 OFFSET ?", (page*10,))
+
+        self.cur.execute("SELECT COUNT(*) FROM accounts;")
+        total_count = self.cur.fetchone()[0]
+        total_pages = math.ceil(total_count / 20)
+
+        self.cur.execute("SELECT nickname FROM accounts LIMIT 20 OFFSET ?;", (page*10,))
         rows = self.cur.fetchall()
         return [row[0] for row in rows]
