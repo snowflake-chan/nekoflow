@@ -72,3 +72,4 @@ class AccountManager:
         param = [(id,) for id in target]
         self.cur.execute("UPDATE accounts SET is_ticked = 0 where is_ticked = 1;")
         self.cur.executemany("UPDATE accounts SET is_ticked = 1 WHERE id = ?;", param)
+        self.con.commit()
