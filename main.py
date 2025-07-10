@@ -1,4 +1,4 @@
-from PyInquirer import prompt
+from InquirerPy import inquirer
 
 from accounts_library import AccountManager
 
@@ -7,39 +7,23 @@ if __name__ == '__main__':
 
     while True:
         try:
-            main_list = [
-                {
-                    'type': 'list',
-                    'name': 'action',
-                    'message': 'nekoflow',
-                    'choices': [
-                        'Collection',
-                        'Add Account',
-                        'About',
-                        'Exit'
-                    ]
-                }
-            ]
-
-            action = prompt(main_list)['action']
+            action = inquirer.select(
+                message='nekoflow',
+                choices=[
+                    'Collection',
+                    'Add Account',
+                    'About',
+                    'Exit'
+                ],
+                default='Collection'
+            ).execute()
 
             if action == 'Collection':
                 pass
 
             elif action == 'Add Account':
-                questions = [
-                    {
-                        'type': 'input',
-                        'name': 'identity',
-                        'message': 'identity> '
-                    },
-                    {
-                        'type': 'input',
-                        'name': 'password',
-                        'message': 'password> '
-                    }
-                ]
-                identity, password = prompt(questions).values()
+                identity = inquirer.text(message='identity> ').execute()
+                password = inquirer.text(message='password> ').execute()
                 manager.add_account(identity, password)
 
             elif action == 'About':
