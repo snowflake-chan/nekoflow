@@ -1,6 +1,7 @@
 from InquirerPy import inquirer
 
 from accounts_library import AccountManager
+from collection_ui import CollectionUI
 
 if __name__ == '__main__':
     manager = AccountManager()
@@ -19,11 +20,7 @@ if __name__ == '__main__':
             ).execute()
 
             if action == 'Collection':
-                collection = manager.get_collection()
-                inquirer.checkbox(
-                    message=f'collection> 1 / {collection["page_count"]}',
-                    choices=collection["choices"]
-                ).execute()
+                CollectionUI(manager).run()
 
             elif action == 'Add Account':
                 identity = inquirer.text(message='identity> ').execute()
