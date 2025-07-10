@@ -36,7 +36,7 @@ class AccountManager:
         AFTER UPDATE ON accounts
         FOR EACH ROW
         BEGIN
-            UPDATE accounts SET last_updated = CURRENT_TIMESTAMP WHERE uid = OLD.uid;
+            UPDATE accounts SET last_updated = CURRENT_TIMESTAMP WHERE id = OLD.id;
         END;
         """
         self.cur.execute(trigger_sql)
