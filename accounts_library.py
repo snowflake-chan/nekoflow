@@ -8,6 +8,7 @@ class AccountManager:
         :param lib: Path to the sqlite3 database
         """
         self.con = sqlite3.connect(lib)
+        self.cur = self.con.cursor()
         self._create_table()
 
     def _create_table(self):
@@ -26,7 +27,7 @@ class AccountManager:
             last_updated TIMESTAMP DEFAULT CURRENT_TIMESTAMP
         );
         """
-        self.con.execute(table_sql)
+        self.cur.execute(table_sql)
         self.con.commit()
 
         trigger_sql = """
@@ -37,17 +38,23 @@ class AccountManager:
             UPDATE accounts SET last_updated = CURRENT_TIMESTAMP WHERE uid = OLD.uid;
         END;
         """
-        self.con.execute(trigger_sql)
+        self.cur.execute(trigger_sql)
         self.con.commit()
 
     def add_account(self,identity,password):
         try:
             user = User(identity,password)
             has_phone_number = user.phone_number is not None
-            self.con.execute("INSERT INTO accounts(is_ticked,id,identity,nickname,password,token,has_phone_number,comments,last_updated)"
+            self.cur.execute("INSERT INTO accounts(is_ticked,id,identity,nickname,password,token,has_phone_number,comments,last_updated)"
                              "VALUES (0,?,?,?,?,?,?,'',CURRENT_TIMESTAMP);",
                              (user.id, identity, user.nickname, password, user.token, has_phone_number))
             self.con.commit()
         except:
             self.con.rollback()
             print("Error adding account")
+
+    def get_collection(self,page=0):
+        """ From page get nicknames of the collection """
+        self.cur.execute("SELECT nickname FROM accounts LIMIT 10 OFFSET ?", (page*10,))
+        rows = self.cur.fetchall()
+        return [row[0] for row in rows]
