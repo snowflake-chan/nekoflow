@@ -46,7 +46,8 @@ class AccountManager:
         try:
             user = User(identity,password)
             has_phone_number = user.phone_number is not None
-            self.cur.execute("INSERT INTO accounts(is_ticked,id,identity,nickname,password,token,has_phone_number,comments,last_updated)"
+            self.cur.execute("INSERT INTO accounts(is_ticked,id,identity,nickname,password,"
+                             "token,has_phone_number,comments,last_updated)"
                              "VALUES (0,?,?,?,?,?,?,'',CURRENT_TIMESTAMP);",
                              (user.id, identity, user.nickname, password, user.token, has_phone_number))
             self.con.commit()
@@ -58,7 +59,8 @@ class AccountManager:
     def get_collection(self,page=0):
         """ From page get nicknames of the collection """
 
-        self.cur.execute("SELECT id, nickname FROM accounts ORDER BY is_ticked DESC LIMIT 20 OFFSET ?;", (page*10,))
+        self.cur.execute("SELECT id, nickname, is_ticked FROM accounts ORDER BY is_ticked DESC LIMIT 20 OFFSET ?;",
+                         (page*10,))
         return self.cur.fetchall()
 
     def get_collection_count(self):

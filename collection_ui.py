@@ -11,7 +11,7 @@ class CollectionUI:
         self.page_count = self.manager.get_collection_count()
 
     def get_current_page_options(self):
-        collection = [Choice(value=row[0], name=row[1])
+        collection = [Choice(value=row[0], name=row[1], enabled=row[2])
                       for row in self.manager.get_collection(self.current_page)]
         # 添加导航按钮
         options = []
