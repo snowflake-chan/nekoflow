@@ -58,13 +58,11 @@ class AccountManager:
     def get_collection(self,page=0):
         """ From page get nicknames of the collection """
 
-        self.cur.execute("SELECT COUNT(*) FROM accounts;")
-        total_count = self.cur.fetchone()[0]
-        page_count = math.ceil(total_count / 20)
-
         self.cur.execute("SELECT nickname FROM accounts LIMIT 20 OFFSET ?;", (page*10,))
         rows = self.cur.fetchall()
-        return {
-            "choices":[row[0] for row in rows],
-            "page_count":page_count
-        }
+        return [row[0] for row in rows],
+
+    def get_collection_count(self):
+        self.cur.execute("SELECT COUNT(*) FROM accounts;")
+        total_count = self.cur.fetchone()[0]
+        return math.ceil(total_count / 20)
