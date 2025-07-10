@@ -58,7 +58,7 @@ class AccountManager:
     def get_collection(self,page=0):
         """ From page get nicknames of the collection """
 
-        self.cur.execute("SELECT nickname FROM accounts LIMIT 20 OFFSET ?;", (page*10,))
+        self.cur.execute("SELECT nickname FROM accounts ORDER BY is_ticked DESC LIMIT 20 OFFSET ?;", (page*10,))
         rows = self.cur.fetchall()
         return [row[0] for row in rows]
 
