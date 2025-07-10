@@ -49,6 +49,7 @@ class AccountManager:
                              "VALUES (0,?,?,?,?,?,?,'',CURRENT_TIMESTAMP);",
                              (user.id, identity, user.nickname, password, user.token, has_phone_number))
             self.con.commit()
+            print(f"Successfully added {user.nickname}({user.id}) to the collection.")
         except:
             self.con.rollback()
             print("Error adding account")
