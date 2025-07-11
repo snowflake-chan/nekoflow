@@ -54,3 +54,4 @@ class CollectionUI:
                 # 返回最终选择（过滤导航按钮）
                 result = [item for item in response if item not in ("__next_page__", "__prev_page__")]
                 self.manager.tick(result)
+                break
