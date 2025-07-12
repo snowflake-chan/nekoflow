@@ -13,7 +13,6 @@ class CollectionUI:
     def get_current_page_options(self):
         collection = [Choice(value=row[0], name=row[1], enabled=row[2])
                       for row in self.manager.get_collection(self.current_page)]
-        # 添加导航按钮
         options = []
         if self.current_page > 0:
             options.append(Choice(value="__prev_page__", name="▲ Page up"))
@@ -27,10 +26,8 @@ class CollectionUI:
         selected = set()
 
         while True:
-            # 获取当前页选项
             choices = self.get_current_page_options()
 
-            # 创建带分页的复选框
             prompt = inquirer.checkbox(
                 message=message,
                 choices=choices,
@@ -40,10 +37,8 @@ class CollectionUI:
 
             response = prompt.execute()
 
-            # 处理导航
             if "__next_page__" in response:
                 self.current_page = min(self.current_page + 1, self.page_count - 1)
-                # 保留当前已选项
                 selected = selected.intersection(set(response))
                 continue
             elif "__prev_page__" in response:
@@ -51,7 +46,6 @@ class CollectionUI:
                 selected = selected.intersection(set(response))
                 continue
             else:
-                # 返回最终选择（过滤导航按钮）
                 result = [item for item in response if item not in ("__next_page__", "__prev_page__")]
                 self.manager.tick(result)
                 break
