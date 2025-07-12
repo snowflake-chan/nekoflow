@@ -1,5 +1,6 @@
 from InquirerPy import inquirer
 from InquirerPy.base.control import Choice
+from prompt_toolkit.keys import Keys
 
 from accounts_library import AccountManager
 
@@ -22,11 +23,13 @@ class CollectionUI:
 
         return options
 
-    def run(self, message="collection> "):
+    def run(self):
         selected = set()
 
         while True:
             choices = self.get_current_page_options()
+
+            message = f"collection> Page {self.current_page + 1} of {self.page_count}"
 
             prompt = inquirer.checkbox(
                 message=message,
