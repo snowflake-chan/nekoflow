@@ -6,6 +6,8 @@ from collection_ui import CollectionUI
 if __name__ == '__main__':
     manager = AccountManager()
 
+    action = 'Collection'
+
     while True:
         try:
             action = inquirer.select(
@@ -16,7 +18,7 @@ if __name__ == '__main__':
                     'About',
                     'Exit'
                 ],
-                default='Collection'
+                default=action
             ).execute()
 
             if action == 'Collection':
