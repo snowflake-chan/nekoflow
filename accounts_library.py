@@ -60,7 +60,7 @@ class AccountManager:
         """ From page get nicknames of the collection """
 
         self.cur.execute("SELECT id, nickname, is_ticked FROM accounts ORDER BY is_ticked DESC LIMIT 20 OFFSET ?;",
-                         (page*10,))
+                         (page*20,))
         return self.cur.fetchall()
 
     def get_collection_count(self):
