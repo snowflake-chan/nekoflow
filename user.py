@@ -12,7 +12,8 @@ headers = {
 api = {
     "login": "/tiger/v3/web/accounts/login",
     "msg_count": "/web/message-record/count",
-    "msg": "/web/message-record?query_type=COMMENT_REPLY&limit=5&offset=0"
+    "msg": "/web/message-record?query_type=COMMENT_REPLY&limit=5&offset=0",
+    "like": "/web/forums/comments/{}/liked?source={}"
 }
 
 def get_url(key):
@@ -76,3 +77,6 @@ class User:
 
     def load_info(self):
         pass
+
+    def like_reply(self, id):
+        self.session.put(get_url("like").format(id,"REPLY"),"{}")

@@ -74,4 +74,14 @@ class AccountManager:
 
     def get_ticked(self):
         self.cur.execute("SELECT token FROM accounts WHERE is_ticked=1 ORDER BY is_ticked DESC;")
-        return self.cur.fetchall()
+        return UserSet([i[0] for i in self.cur.fetchall()])
+
+class UserSet:
+    user_set = set()
+    def __init__(self,tokens):
+        for i in tokens:
+            self.user_set.add(User(i))
+
+    def like_reply(self,id):
+        for i in self.user_set:
+            i.like_reply(id)

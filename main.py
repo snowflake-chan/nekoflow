@@ -15,6 +15,7 @@ if __name__ == '__main__':
                 choices=[
                     'Collection',
                     'Add Account',
+                    'Like Reply',
                     'About',
                     'Exit'
                 ],
@@ -41,6 +42,10 @@ if __name__ == '__main__':
                 identity = inquirer.text(message='identity> ').execute()
                 password = inquirer.text(message='password> ').execute()
                 manager.add_account(identity, password)
+
+            elif action == 'Like Reply':
+                id = inquirer.number(message='reply id> ').execute()
+                manager.get_ticked().like_reply(id)
 
             elif action == 'About':
                 print('nekoflow(R) 2025. All rights reserved.')
