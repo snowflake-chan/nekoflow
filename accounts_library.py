@@ -1,6 +1,6 @@
+import asyncio
 import sqlite3
 from user import User
-import math
 
 class AccountManager:
     def __init__(self, lib=".db"):
@@ -44,7 +44,7 @@ class AccountManager:
 
     def add_account(self,identity,password):
         try:
-            user = User(identity,password)
+            user = asyncio.run(User().login_with_identity(identity,password))
             has_phone_number = user.phone_number is not None
             self.cur.execute("INSERT INTO accounts(is_ticked,id,identity,nickname,password,"
                              "token,has_phone_number,comments,last_updated)"
@@ -72,16 +72,35 @@ class AccountManager:
         self.cur.executemany("UPDATE accounts SET is_ticked = 1 WHERE id = ?;", param)
         self.con.commit()
 
-    def get_ticked(self):
+    async def get_ticked(self):
         self.cur.execute("SELECT token FROM accounts WHERE is_ticked=1 ORDER BY is_ticked DESC;")
-        return UserSet([i[0] for i in self.cur.fetchall()])
+        u = UserSet()
+        await u.register((i[0] for i in self.cur.fetchall()))
+        return u
 
 class UserSet:
-    user_set = set()
-    def __init__(self,tokens):
-        for i in tokens:
-            self.user_set.add(User(i))
+    def __init__(self):
+        self.user_set = set()
 
-    def like_reply(self,id):
-        for i in self.user_set:
-            i.like_reply(id)
+    async def register(self,tokens):
+        resp = await asyncio.gather(*(User().login_with_token(t) for t in tokens))
+        self.user_set.update(resp)
+
+    async def like_reply(self,id):
+        l = (u.like_reply(id) for u in self.user_set)
+        resp = await asyncio.gather(*l)
+        succeeded = resp.count(True)
+        total = len(self.user_set)
+        print(f"{succeeded} / {total} OK")
+        await self.close()
+
+    async def report_reply(self,id):
+        l = (u.report_reply(id) for u in self.user_set)
+        resp = await asyncio.gather(*l)
+        succeeded = resp.count(True)
+        total = len(self.user_set)
+        print(f"{succeeded} / {total} OK")
+        await self.close()
+
+    async def close(self):
+        await asyncio.gather(*(u.close() for u in self.user_set))

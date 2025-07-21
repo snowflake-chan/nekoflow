@@ -1,7 +1,18 @@
+import asyncio
+
 from InquirerPy import inquirer
 
 from accounts_library import AccountManager
 from InquirerPy.base.control import Choice
+
+
+async def like_reply():
+    ticked = await manager.get_ticked()
+    await ticked.like_reply(id)
+
+async def report_reply():
+    ticked = await manager.get_ticked()
+    await ticked.report_reply(id)
 
 if __name__ == '__main__':
     manager = AccountManager()
@@ -16,6 +27,7 @@ if __name__ == '__main__':
                     'Collection',
                     'Add Account',
                     'Like Reply',
+                    'Report Reply',
                     'About',
                     'Exit'
                 ],
@@ -45,7 +57,11 @@ if __name__ == '__main__':
 
             elif action == 'Like Reply':
                 id = inquirer.number(message='reply id> ').execute()
-                manager.get_ticked().like_reply(id)
+                asyncio.run(like_reply())
+
+            elif action == 'Report Reply':
+                id = inquirer.number(message='reply id> ').execute()
+                asyncio.run(report_reply())
 
             elif action == 'About':
                 print('nekoflow(R) 2025. All rights reserved.')
@@ -55,6 +71,3 @@ if __name__ == '__main__':
 
         except KeyboardInterrupt:
             exit(0)
-
-        except Exception as e:
-            print(e)

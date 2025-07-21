@@ -1,4 +1,5 @@
-from requests import Session
+import aiohttp
+import asyncio
 from dataclasses import dataclass
 from dacite import from_dict
 
@@ -13,7 +14,8 @@ api = {
     "login": "/tiger/v3/web/accounts/login",
     "msg_count": "/web/message-record/count",
     "msg": "/web/message-record?query_type=COMMENT_REPLY&limit=5&offset=0",
-    "like": "/web/forums/comments/{}/liked?source={}"
+    "like": "/web/forums/comments/{}/liked?source={}",
+    "report": "/web/reports/posts/discussions"
 }
 
 def get_url(key):
@@ -49,24 +51,28 @@ class LoginException(Exception):
     pass
 
 class User:
-    verified: bool = False
+    def __init__(self):
+        self.session = None
+        self.verified = False
+        self.token = ""
+        self.id = None
+        self.nickname = ""
+        self.phone_number = ""
 
-    id:int
-    nickname:str
-    phone_number:str
-    token: str
+    async def login_with_token(self, token):
+        self.session = aiohttp.ClientSession(headers=headers)
+        self.token = token
+        self.session.cookie_jar.update_cookies({"authorization": self.token})
+        return self
 
-    def __init__(self, *args):
-        self.session = Session()
-        self.session.headers.update(headers)
-        if len(args) == 1:
-            self.session.cookies.update({"authorization": args[0]})
-        elif len(args) == 2:
-            identity, password = args
-            d = self.session.post(get_url("login"),
-                              json={"identity": identity, "password": password, "pid": "65edCTyg"})
-            if d.status_code == 200:
-                info = from_dict(data_class=LoginInfo, data=d.json())
+    async def login_with_identity(self, identity, password):
+        self.session = aiohttp.ClientSession(headers=headers)
+        url = get_url("login")
+        payload = {"identity": identity, "password": password, "pid": "65edCTyg"}
+        async with self.session.post(url, json=payload, headers=headers) as resp:
+            if resp.status == 200:
+                result = await resp.json()
+                info = from_dict(data_class=LoginInfo, data=result)
                 self.verified = True
                 self.id = info.user_info.id
                 self.nickname = info.user_info.nickname
@@ -75,8 +81,24 @@ class User:
             else:
                 raise LoginException("Failed to login")
 
-    def load_info(self):
+    async def like_reply(self, comment_id: int):
+        url = get_url("like").format(comment_id, "REPLY")
+        async with self.session.put(url, json={}, headers=headers) as resp:
+            return resp.status == 204
+
+    async def report_reply(self,id):
+        url = get_url("report")
+        payload = {
+            "discussion_id": str(id),
+            "source": "REPLY",
+            "reason_id": "4",
+            "description": "人身攻击"
+        }
+        async with self.session.post(url, json=payload, headers=headers) as resp:
+            return resp.status == 201
+
+    async def load_info(self):
         pass
 
-    def like_reply(self, id):
-        self.session.put(get_url("like").format(id,"REPLY"),"{}")
+    async def close(self):
+        await self.session.close()
