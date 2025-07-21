@@ -71,3 +71,7 @@ class AccountManager:
         self.cur.execute("UPDATE accounts SET is_ticked = 0 where is_ticked = 1;")
         self.cur.executemany("UPDATE accounts SET is_ticked = 1 WHERE id = ?;", param)
         self.con.commit()
+
+    def get_ticked(self):
+        self.cur.execute("SELECT token FROM accounts WHERE is_ticked=1 ORDER BY is_ticked DESC;")
+        return self.cur.fetchall()
