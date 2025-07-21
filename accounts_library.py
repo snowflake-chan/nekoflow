@@ -56,17 +56,15 @@ class AccountManager:
             self.con.rollback()
             print("Error adding account")
 
-    def get_collection(self,page=0):
+    def get_collection(self):
         """ From page get nicknames of the collection """
 
-        self.cur.execute("SELECT id, nickname, is_ticked FROM accounts ORDER BY is_ticked DESC LIMIT 20 OFFSET ?;",
-                         (page*20,))
+        self.cur.execute("SELECT id, nickname, is_ticked FROM accounts ORDER BY is_ticked DESC;")
         return self.cur.fetchall()
 
     def get_collection_count(self):
         self.cur.execute("SELECT COUNT(*) FROM accounts;")
-        total_count = self.cur.fetchone()[0]
-        return math.ceil(total_count / 20)
+        return self.cur.fetchone()[0]
 
     def tick(self, target):
         param = [(id,) for id in target]

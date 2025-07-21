@@ -1,7 +1,7 @@
 from InquirerPy import inquirer
 
 from accounts_library import AccountManager
-from collection_ui import CollectionUI
+import collection_ui
 
 if __name__ == '__main__':
     manager = AccountManager()
@@ -22,7 +22,7 @@ if __name__ == '__main__':
             ).execute()
 
             if action == 'Collection':
-                CollectionUI(manager).run()
+                collection_ui.run(manager)
 
             elif action == 'Add Account':
                 identity = inquirer.text(message='identity> ').execute()
