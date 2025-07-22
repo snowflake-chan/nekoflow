@@ -1,9 +1,7 @@
 import aiohttp
-import asyncio
+from asyncio import Semaphore
 from dataclasses import dataclass
 from dacite import from_dict
-
-src = "https://api.codemao.cn"
 
 headers = {
     'Content-Type': 'application/json',
@@ -18,8 +16,7 @@ api = {
     "report": "/web/reports/posts/discussions"
 }
 
-def get_url(key):
-    return src + api[key]
+semaphore = Semaphore(10)
 
 @dataclass
 class AuthInfo:
@@ -60,16 +57,15 @@ class User:
         self.phone_number = ""
 
     async def login_with_token(self, token):
-        self.session = aiohttp.ClientSession(headers=headers)
+        self.session = aiohttp.ClientSession("https://api.codemao.cn", headers=headers)
         self.token = token
         self.session.cookie_jar.update_cookies({"authorization": self.token})
         return self
 
     async def login_with_identity(self, identity, password):
-        self.session = aiohttp.ClientSession(headers=headers)
-        url = get_url("login")
+        self.session = aiohttp.ClientSession("https://api.codemao.cn", headers=headers)
         payload = {"identity": identity, "password": password, "pid": "65edCTyg"}
-        async with self.session.post(url, json=payload, headers=headers) as resp:
+        async with self.session.post(api["login"], json=payload, headers=headers) as resp:
             if resp.status == 200:
                 result = await resp.json()
                 info = from_dict(data_class=LoginInfo, data=result)
@@ -83,20 +79,21 @@ class User:
             return self
 
     async def like_reply(self, comment_id: int):
-        url = get_url("like").format(comment_id, "REPLY")
-        async with self.session.put(url, json={}, headers=headers) as resp:
-            return resp.status == 204
+        async with semaphore:
+            url = api["like"].format(comment_id, "REPLY")
+            async with self.session.put(url, json={}, headers=headers) as resp:
+                return resp.status == 204
 
     async def report_reply(self,id):
-        url = get_url("report")
-        payload = {
-            "discussion_id": str(id),
-            "source": "REPLY",
-            "reason_id": "4",
-            "description": "人身攻击"
-        }
-        async with self.session.post(url, json=payload, headers=headers) as resp:
-            return resp.status == 201
+        async with semaphore:
+            payload = {
+                "discussion_id": str(id),
+                "source": "REPLY",
+                "reason_id": "4",
+                "description": "人身攻击"
+            }
+            async with self.session.post(api["report"], json=payload, headers=headers) as resp:
+                return resp.status == 201
 
     async def load_info(self):
         pass
