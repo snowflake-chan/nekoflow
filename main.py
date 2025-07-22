@@ -32,8 +32,10 @@ async def follow_user(user_id):
     ticked = await manager.get_ticked()
     await ticked.follow(user_id)
 
-async def activate_work(work_id, number):
-    await tqdm_asyncio.gather(*(single_request(work_id) for _ in range(number)))
+async def view_work(work_id, number):
+    resp = await tqdm_asyncio.gather(*(single_request(work_id) for _ in range(number)))
+    succeeded = resp.count(True)
+    print(f"{succeeded} / {number} OK")
 
 if __name__ == '__main__':
     manager = AccountManager()
@@ -82,15 +84,15 @@ if __name__ == '__main__':
                 work_action = inquirer.select(
                     message='work> ',
                     choices=[
-                        'Activate',
+                        'View',
                         'Like',
                         'Collect',
                         'Fork'
                     ]
                 ).execute()
-                if work_action == 'Activate':
+                if work_action == 'View':
                     number = inquirer.number(message='number> ').execute()
-                    asyncio.run(activate_work(work_id, int(number)))
+                    asyncio.run(view_work(work_id, int(number)))
                 elif work_action == 'Like':
                     asyncio.run(like_work(work_id))
                 elif work_action == 'Collect':
