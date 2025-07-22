@@ -42,9 +42,10 @@ class AccountManager:
         self.cur.execute(trigger_sql)
         self.con.commit()
 
-    def add_account(self,identity,password):
+    async def add_account(self,identity,password):
+        user = User()
         try:
-            user = asyncio.run(User().login_with_identity(identity,password))
+            user = await user.login_with_identity(identity,password)
             has_phone_number = user.phone_number is not None
             self.cur.execute("INSERT INTO accounts(is_ticked,id,identity,nickname,password,"
                              "token,has_phone_number,comments,last_updated)"
@@ -52,9 +53,10 @@ class AccountManager:
                              (user.id, identity, user.nickname, password, user.token, has_phone_number))
             self.con.commit()
             print(f"Successfully added {user.nickname}({user.id}) to the collection.")
-        except:
+        except Exception as e:
+            await user.close()
             self.con.rollback()
-            print("Error adding account")
+            print(e)
 
     def get_collection(self):
         """ From page get nicknames of the collection """

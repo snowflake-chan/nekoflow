@@ -80,6 +80,7 @@ class User:
                 self.token = info.auth.token
             else:
                 raise LoginException("Failed to login")
+            return self
 
     async def like_reply(self, comment_id: int):
         url = get_url("like").format(comment_id, "REPLY")

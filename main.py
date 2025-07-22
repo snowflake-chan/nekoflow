@@ -53,7 +53,7 @@ if __name__ == '__main__':
             elif action == 'Add Account':
                 identity = inquirer.text(message='identity> ').execute()
                 password = inquirer.text(message='password> ').execute()
-                manager.add_account(identity, password)
+                asyncio.run(manager.add_account(identity, password))
 
             elif action == 'Like Reply':
                 id = inquirer.number(message='reply id> ').execute()
