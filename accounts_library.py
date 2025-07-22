@@ -1,6 +1,7 @@
 import asyncio
 import sqlite3
 from user import User
+from tqdm.asyncio import tqdm_asyncio
 
 class AccountManager:
     def __init__(self, lib=".db"):
@@ -88,17 +89,28 @@ class UserSet:
         resp = await asyncio.gather(*(User().login_with_token(t) for t in tokens))
         self.user_set.update(resp)
 
-    async def like_reply(self,id):
-        l = (u.like_reply(id) for u in self.user_set)
-        resp = await asyncio.gather(*l)
-        succeeded = resp.count(True)
-        total = len(self.user_set)
-        print(f"{succeeded} / {total} OK")
-        await self.close()
+    async def like_reply(self, reply_id):
+        l = (u.like_reply(reply_id) for u in self.user_set)
+        await self.gather(l)
 
-    async def report_reply(self,id):
-        l = (u.report_reply(id) for u in self.user_set)
-        resp = await asyncio.gather(*l)
+    async def report_reply(self, reply_id):
+        l = (u.report_reply(reply_id) for u in self.user_set)
+        await self.gather(l)
+
+    async def like_work(self, work_id):
+        l = (u.like_work(work_id) for u in self.user_set)
+        await self.gather(l)
+
+    async def collect_work(self, work_id):
+        l = (u.collect_work(work_id) for u in self.user_set)
+        await self.gather(l)
+
+    async def fork_work(self, work_id):
+        l = (u.fork_work(work_id) for u in self.user_set)
+        await self.gather(l)
+
+    async def gather(self, l):
+        resp = await tqdm_asyncio.gather(*l)
         succeeded = resp.count(True)
         total = len(self.user_set)
         print(f"{succeeded} / {total} OK")
