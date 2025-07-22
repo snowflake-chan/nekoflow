@@ -47,7 +47,7 @@ class AccountManager:
         user = User()
         try:
             user = await user.login_with_identity(identity,password)
-            has_phone_number = user.phone_number is not None
+            has_phone_number = user.phone_number != ""
             self.cur.execute("INSERT INTO accounts(is_ticked,id,identity,nickname,password,"
                              "token,has_phone_number,comments,last_updated)"
                              "VALUES (0,?,?,?,?,?,?,'',CURRENT_TIMESTAMP);",
