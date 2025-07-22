@@ -109,6 +109,10 @@ class UserSet:
         l = (u.fork_work(work_id) for u in self.user_set)
         await self.gather(l)
 
+    async def follow(self, user_id):
+        l = (u.follow(user_id) for u in self.user_set)
+        await self.gather(l)
+
     async def gather(self, l):
         resp = await tqdm_asyncio.gather(*l)
         succeeded = resp.count(True)

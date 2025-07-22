@@ -5,8 +5,6 @@ from dataclasses import dataclass
 from aiohttp import ClientSession
 from dacite import from_dict
 
-limiter = AsyncLimiter(max_rate=20, time_period=1)
-
 headers = {
     'Content-Type': 'application/json',
     'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/132.0.0.0 Safari/537.36',
@@ -20,7 +18,8 @@ api = {
     "report": "/web/reports/posts/discussions",
     "like_work": "/nemo/v2/works/{}/like",
     "collect_work": "/nemo/v2/works/{}/collection",
-    "fork_work": "/nemo/v2/works/{}/fork"
+    "fork_work": "/nemo/v2/works/{}/fork",
+    "follow": "/nemo/v2/user/{}/follow"
 }
 
 @dataclass
@@ -84,12 +83,14 @@ class User:
             return self
 
     async def like_reply(self, comment_id: int):
+        limiter = AsyncLimiter(max_rate=20, time_period=1)
         async with limiter:
             url = api["like"].format(comment_id, "REPLY")
             async with self.session.put(url, json={}, headers=headers) as resp:
                 return resp.status == 204
 
     async def report_reply(self,id):
+        limiter = AsyncLimiter(max_rate=20, time_period=1)
         async with limiter:
             payload = {
                 "discussion_id": str(id),
@@ -101,22 +102,32 @@ class User:
                 return resp.status == 201
 
     async def like_work(self, work_id):
+        limiter = AsyncLimiter(max_rate=20, time_period=1)
         async with limiter:
             url = api["like_work"].format(work_id)
             async with self.session.post(url, json={}, headers=headers) as resp:
                 return resp.status == 200
 
     async def collect_work(self, work_id):
+        limiter = AsyncLimiter(max_rate=20, time_period=1)
         async with limiter:
             url = api["collect_work"].format(work_id)
             async with self.session.post(url, json={}, headers=headers) as resp:
                 return resp.status == 200
 
     async def fork_work(self,work_id):
+        limiter = AsyncLimiter(max_rate=20, time_period=1)
         async with limiter:
             url = api["fork_work"].format(work_id)
             async with self.session.post(url, json={}, headers=headers) as resp:
                 return resp.status == 200
+
+    async def follow(self, user_id):
+        limiter = AsyncLimiter(max_rate=20, time_period=1)
+        async with limiter:
+            url = api["follow"].format(user_id)
+            async with self.session.post(url, json={}, headers=headers) as resp:
+                return resp.status == 204
 
     async def load_info(self):
         pass
@@ -125,6 +136,7 @@ class User:
         await self.session.close()
 
 async def single_request(work_id):
+    limiter = AsyncLimiter(max_rate=20, time_period=1)
     async with limiter:
         async with ClientSession(headers=headers) as session:
             async with session.head(f"https://api.codemao.cn/creation-tools/v1/works/{work_id}") as resp:

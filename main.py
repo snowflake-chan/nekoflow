@@ -28,6 +28,10 @@ async def fork_work(work_id):
     ticked = await manager.get_ticked()
     await ticked.fork_work(work_id)
 
+async def follow_user(user_id):
+    ticked = await manager.get_ticked()
+    await ticked.follow(user_id)
+
 async def activate_work(work_id, number):
     await tqdm_asyncio.gather(*(single_request(work_id) for _ in range(number)))
 
@@ -44,6 +48,7 @@ if __name__ == '__main__':
                     'Collection',
                     'Add Account',
                     'Work',
+                    'Follow User',
                     'Like Reply',
                     'Report Reply',
                     'About',
@@ -92,7 +97,9 @@ if __name__ == '__main__':
                     asyncio.run(collect_work(work_id))
                 elif work_action == 'Fork':
                     asyncio.run(fork_work(work_id))
-
+            elif action == 'Follow User':
+                user_id = inquirer.number(message='user id> ').execute()
+                asyncio.run(follow_user(user_id))
             elif action == 'Like Reply':
                 reply_id = inquirer.number(message='reply id> ').execute()
                 asyncio.run(like_reply(reply_id))
