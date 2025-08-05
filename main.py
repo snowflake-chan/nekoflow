@@ -1,47 +1,36 @@
 import asyncio
 from tqdm.asyncio import tqdm_asyncio
-
 from InquirerPy import inquirer
-
 from accounts_library import AccountManager
 from InquirerPy.base.control import Choice
-
 from user import single_request
 
-async def like_reply(reply_id):
-    ticked = await manager.get_ticked()
-    await ticked.like_reply(reply_id)
+manager = AccountManager()
 
-async def report_reply(reply_id):
+async def batch_user_action(method, *args):
     ticked = await manager.get_ticked()
-    await ticked.report_reply(reply_id)
-
-async def like_work(work_id):
-    ticked = await manager.get_ticked()
-    await ticked.like_work(work_id)
-
-async def collect_work(work_id):
-    ticked = await manager.get_ticked()
-    await ticked.collect_work(work_id)
-
-async def fork_work(work_id):
-    ticked = await manager.get_ticked()
-    await ticked.fork_work(work_id)
-
-async def follow_user(user_id):
-    ticked = await manager.get_ticked()
-    await ticked.follow(user_id)
+    await getattr(ticked, method)(*args)
 
 async def view_work(work_id, number):
     resp = await tqdm_asyncio.gather(*(single_request(work_id) for _ in range(number)))
     succeeded = resp.count(True)
     print(f"{succeeded} / {number} OK")
 
+action_map = {
+    'Like Reply': lambda: asyncio.run(batch_user_action("like_reply", inquirer.number(message='reply id> ').execute())),
+    'Report Reply': lambda: asyncio.run(batch_user_action("report_reply", inquirer.number(message='reply id> ').execute())),
+    'Like': lambda: asyncio.run(batch_user_action("like_work", inquirer.number(message='work id> ').execute())),
+    'Collect': lambda: asyncio.run(batch_user_action("collect_work", inquirer.number(message='work id> ').execute())),
+    'Fork': lambda: asyncio.run(batch_user_action("fork_work", inquirer.number(message='work id> ').execute())),
+    'Follow User': lambda: asyncio.run(batch_user_action("follow", inquirer.number(message='user id> ').execute())),
+    'View': lambda: asyncio.run(view_work(
+        inquirer.number(message='work id> ').execute(),
+        int(inquirer.number(message='number> ').execute())
+    )),
+}
+
 if __name__ == '__main__':
-    manager = AccountManager()
-
     action = 'Collection'
-
     while True:
         try:
             action = inquirer.select(
@@ -61,54 +50,29 @@ if __name__ == '__main__':
 
             if action == 'Collection':
                 entry_count = manager.get_collection_count()
-                while True:
-                    choices = [Choice(value=row[0], name=row[1], enabled=row[2])
-                               for row in manager.get_collection()]
-
-                    response = inquirer.checkbox(
-                        message="collection> ",
-                        choices=choices,
-                        transformer=lambda x: f"{len(x)} / {entry_count}",
-                    ).execute()
-
-                    result = [item for item in response]
-                    manager.tick(result)
-                    break
+                choices = [Choice(value=row[0], name=row[1], enabled=row[2])
+                            for row in manager.get_collection()]
+                response = inquirer.checkbox(
+                    message="collection> ",
+                    choices=choices,
+                    transformer=lambda x: f"{len(x)} / {entry_count}",
+                ).execute()
+                manager.tick([item for item in response])
 
             elif action == 'Add Account':
                 identity = inquirer.text(message='identity> ').execute()
                 password = inquirer.text(message='password> ').execute()
                 asyncio.run(manager.add_account(identity, password))
+
             elif action == 'Work':
-                work_id = inquirer.number(message='work id> ').execute()
                 work_action = inquirer.select(
                     message='work> ',
-                    choices=[
-                        'View',
-                        'Like',
-                        'Collect',
-                        'Fork'
-                    ]
+                    choices=['View', 'Like', 'Collect', 'Fork']
                 ).execute()
-                if work_action == 'View':
-                    number = inquirer.number(message='number> ').execute()
-                    asyncio.run(view_work(work_id, int(number)))
-                elif work_action == 'Like':
-                    asyncio.run(like_work(work_id))
-                elif work_action == 'Collect':
-                    asyncio.run(collect_work(work_id))
-                elif work_action == 'Fork':
-                    asyncio.run(fork_work(work_id))
-            elif action == 'Follow User':
-                user_id = inquirer.number(message='user id> ').execute()
-                asyncio.run(follow_user(user_id))
-            elif action == 'Like Reply':
-                reply_id = inquirer.number(message='reply id> ').execute()
-                asyncio.run(like_reply(reply_id))
+                action_map[work_action]()
 
-            elif action == 'Report Reply':
-                reply_id = inquirer.number(message='reply id> ').execute()
-                asyncio.run(report_reply(reply_id))
+            elif action in action_map:
+                action_map[action]()
 
             elif action == 'About':
                 print('nekoflow(R) 2025. All rights reserved.')

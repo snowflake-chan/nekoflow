@@ -83,42 +83,37 @@ class AccountManager:
 
 class UserSet:
     def __init__(self):
-        self.user_set = set()
+        self.users = []
 
-    async def register(self,tokens):
+    async def register(self, tokens):
         resp = await asyncio.gather(*(User().login_with_token(t) for t in tokens))
-        self.user_set.update(resp)
+        self.users.extend(resp)
 
-    async def like_reply(self, reply_id):
-        l = (u.like_reply(reply_id) for u in self.user_set)
-        await self.gather(l)
-
-    async def report_reply(self, reply_id):
-        l = (u.report_reply(reply_id) for u in self.user_set)
-        await self.gather(l)
-
-    async def like_work(self, work_id):
-        l = (u.like_work(work_id) for u in self.user_set)
-        await self.gather(l)
-
-    async def collect_work(self, work_id):
-        l = (u.collect_work(work_id) for u in self.user_set)
-        await self.gather(l)
-
-    async def fork_work(self, work_id):
-        l = (u.fork_work(work_id) for u in self.user_set)
-        await self.gather(l)
-
-    async def follow(self, user_id):
-        l = (u.follow(user_id) for u in self.user_set)
-        await self.gather(l)
-
-    async def gather(self, l):
-        resp = await tqdm_asyncio.gather(*l)
+    async def batch_action(self, method_name, *args, **kwargs):
+        tasks = [getattr(u, method_name)(*args, **kwargs) for u in self.users]
+        resp = await tqdm_asyncio.gather(*tasks)
         succeeded = resp.count(True)
-        total = len(self.user_set)
+        total = len(self.users)
         print(f"{succeeded} / {total} OK")
         await self.close()
 
+    async def like_reply(self, reply_id):
+        await self.batch_action("like_reply", reply_id)
+
+    async def report_reply(self, reply_id):
+        await self.batch_action("report_reply", reply_id)
+
+    async def like_work(self, work_id):
+        await self.batch_action("like_work", work_id)
+
+    async def collect_work(self, work_id):
+        await self.batch_action("collect_work", work_id)
+
+    async def fork_work(self, work_id):
+        await self.batch_action("fork_work", work_id)
+
+    async def follow(self, user_id):
+        await self.batch_action("follow", user_id)
+
     async def close(self):
-        await asyncio.gather(*(u.close() for u in self.user_set))
+        await asyncio.gather(*(u.close() for u in self.users))
