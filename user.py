@@ -4,6 +4,7 @@ from dataclasses import dataclass
 
 from aiohttp import ClientSession
 from dacite import from_dict
+from asyncio import Semaphore
 
 headers = {
     'Content-Type': 'application/json',
@@ -60,11 +61,13 @@ class User:
         self.nickname = ""
         self.phone_number = ""
         self.limiter = AsyncLimiter(max_rate=20, time_period=1)
+        self.semaphore = Semaphore(50)
 
     async def _request(self, method, url, **kwargs):
         async with self.limiter:
-            async with getattr(self.session, method)(url, **kwargs) as resp:
-                return resp
+            async with self.semaphore:
+                async with getattr(self.session, method)(url, **kwargs) as resp:
+                    return resp
 
     async def login_with_token(self, token):
         self.session = aiohttp.ClientSession("https://api.codemao.cn", headers=headers)
@@ -132,7 +135,9 @@ class User:
 
 async def single_request(work_id):
     limiter = AsyncLimiter(max_rate=20, time_period=1)
-    async with limiter:
-        async with ClientSession(headers=headers) as session:
-            async with session.head(f"https://api.codemao.cn/creation-tools/v1/works/{work_id}") as resp:
-                return resp.status == 200
+    semaphore = Semaphore(50)
+    async with semaphore:
+        async with limiter:
+            async with ClientSession(headers=headers) as session:
+                async with session.head(f"https://api.codemao.cn/creation-tools/v1/works/{work_id}") as resp:
+                    return resp.status == 200
